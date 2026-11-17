@@ -8,16 +8,11 @@ from ioh import get_problem, logger, ProblemClass
 
 budget = 5000
 
-pop_size = 20         ## number of individuals in the population
-tournament_size = 3   ## how many individuals compete in each tournament
-crossover_rate = 0.8  ## probability of crossover
-mutation_rate = 0.02  ## probability to flip each bit (about 1/n)
-
 # To make your results reproducible (not required by the assignment), you could set the random seed by
 # `np.random.seed(some integer, e.g., 42)`
 
 # Tournament selection: pick a few random individuals, return the best one
-def select_parent(fitness):
+def select_parent(fitness, tournament_size):
     candidates = np.random.choice(len(fitness), tournament_size, replace=False)
     best = candidates[0]
     for c in candidates:
@@ -36,23 +31,23 @@ def crossover(p1, p2):
     return child
 
 # Bit-flip mutation: flip each bit with probability mutation_rate
-def mutate(x):
+def mutate(x, mutation_rate):
     for j in range(len(x)):
         if np.random.rand() < mutation_rate:
             x[j] = 1 - x[j]
     return x
 
-def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO) -> None:
+def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO, pop_size=20, tournament_size=3,
+                                     crossover_rate=0.8, mutation_rate=0.02) -> None:
     # initial_pop = ... make sure you randomly create the first population
-    n = problem.meta_data.n_variables                  # NEW
-    population = []                                    # NEW
-    fitness = []                                       # NEW
-    for i in range(pop_size):                              # NEW
-        x = np.random.randint(0, 2, n)                 # NEW
-        population.append(x)                           # NEW
-        fitness.append(problem(x))                     # NEW
-    
-      # NEW (test only)
+    n = problem.meta_data.n_variables
+    population = []
+    fitness = []
+    for i in range(pop_size):
+        x = np.random.randint(0, 2, n)
+        population.append(x)
+        fitness.append(problem(x))
+
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
@@ -69,13 +64,13 @@ def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO) -> None:
 
         # Fill the rest of the new population with children
         while len(new_population) < pop_size and problem.state.evaluations < budget:
-            p1 = population[select_parent(fitness)]
-            p2 = population[select_parent(fitness)]
+            p1 = population[select_parent(fitness, tournament_size)]
+            p2 = population[select_parent(fitness, tournament_size)]
             if np.random.rand() < crossover_rate:
                 child = crossover(p1, p2)
             else:
                 child = p1.copy()
-            child = mutate(child)
+            child = mutate(child, mutation_rate)
             new_population.append(child)
             new_fitness.append(problem(child))
 
