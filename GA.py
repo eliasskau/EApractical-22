@@ -51,7 +51,6 @@ def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO) -> None:
         x = np.random.randint(0, 2, n)                 # NEW
         population.append(x)                           # NEW
         fitness.append(problem(x))                     # NEW
-    print("best of first population:", max(fitness)) 
     
       # NEW (test only)
     # `problem.state.evaluations` counts the number of function evaluation automatically,
@@ -106,6 +105,8 @@ def create_problem(dimension: int, fid: int) -> Tuple[ioh.problem.PBO, ioh.logge
 
 
 if __name__ == "__main__":
+
+    np.random.seed(42)
     # this how you run your algorithm with 20 repetitions/independent run
     # create the LABS problem and the data logger
     F18, _logger = create_problem(dimension=50, fid=18)
