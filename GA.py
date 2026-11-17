@@ -8,12 +8,52 @@ from ioh import get_problem, logger, ProblemClass
 
 budget = 5000
 
+pop_size = 20         ## number of individuals in the population
+tournament_size = 3   ## how many individuals compete in each tournament
+crossover_rate = 0.8  ## probability of crossover
+mutation_rate = 0.02  ## probability to flip each bit (about 1/n)
+
 # To make your results reproducible (not required by the assignment), you could set the random seed by
 # `np.random.seed(some integer, e.g., 42)`
 
+# Tournament selection: pick a few random individuals, return the best one
+def select_parent(fitness):
+    candidates = np.random.choice(len(fitness), tournament_size, replace=False)
+    best = candidates[0]
+    for c in candidates:
+        if fitness[c] > fitness[best]:
+            best = c
+    return best
+
+
+
+# Uniform crossover: each bit comes from parent 1 or parent 2 (coin flip)
+def crossover(p1, p2):
+    child = p1.copy()
+    for j in range(len(p1)):
+        if np.random.rand() < 0.5:
+            child[j] = p2[j]
+    return child
+
+# Bit-flip mutation: flip each bit with probability mutation_rate
+def mutate(x):
+    for j in range(len(x)):
+        if np.random.rand() < mutation_rate:
+            x[j] = 1 - x[j]
+    return x
+
 def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO) -> None:
     # initial_pop = ... make sure you randomly create the first population
-
+    n = problem.meta_data.n_variables                  # NEW
+    population = []                                    # NEW
+    fitness = []                                       # NEW
+    for i in range(pop_size):                              # NEW
+        x = np.random.randint(0, 2, n)                 # NEW
+        population.append(x)                           # NEW
+        fitness.append(problem(x))                     # NEW
+    print("best of first population:", max(fitness)) 
+    
+      # NEW (test only)
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
@@ -22,8 +62,29 @@ def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO) -> None:
         # .....
         # this is how you evaluate one solution `x`
         # f = problem(x)
+
+        # Elitism: the best individual goes to the new population unchanged
+        best = np.argmax(fitness)
+        new_population = [population[best].copy()]
+        new_fitness = [fitness[best]]
+
+        # Fill the rest of the new population with children
+        while len(new_population) < pop_size and problem.state.evaluations < budget:
+            p1 = population[select_parent(fitness)]
+            p2 = population[select_parent(fitness)]
+            if np.random.rand() < crossover_rate:
+                child = crossover(p1, p2)
+            else:
+                child = p1.copy()
+            child = mutate(child)
+            new_population.append(child)
+            new_fitness.append(problem(child))
+
+        population = new_population
+        fitness = new_fitness
+
+    print("best found:", max(fitness))
     # no return value needed
-        pass
 
 
 def create_problem(dimension: int, fid: int) -> Tuple[ioh.problem.PBO, ioh.logger.Analyzer]:
