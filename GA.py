@@ -38,7 +38,7 @@ def mutate(x, mutation_rate):
     return x
 
 def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO, pop_size=20, tournament_size=3,
-                                     crossover_rate=0.8, mutation_rate=0.02) -> None:
+                                     crossover_rate=0.8, mutation_rate=0.02, max_evals =5000) -> float:
     # initial_pop = ... make sure you randomly create the first population
     n = problem.meta_data.n_variables
     population = []
@@ -51,7 +51,7 @@ def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO, pop_size=20, tour
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
-    while problem.state.evaluations < budget:
+    while problem.state.evaluations < max_evals:
         # please implement the mutation, crossover, selection here
         # .....
         # this is how you evaluate one solution `x`
@@ -63,7 +63,7 @@ def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO, pop_size=20, tour
         new_fitness = [fitness[best]]
 
         # Fill the rest of the new population with children
-        while len(new_population) < pop_size and problem.state.evaluations < budget:
+        while len(new_population) < pop_size and problem.state.evaluations < max_evals:
             p1 = population[select_parent(fitness, tournament_size)]
             p2 = population[select_parent(fitness, tournament_size)]
             if np.random.rand() < crossover_rate:
@@ -78,6 +78,7 @@ def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO, pop_size=20, tour
         fitness = new_fitness
 
     print("best found:", max(fitness))
+    return max(fitness)
     # no return value needed
 
 
