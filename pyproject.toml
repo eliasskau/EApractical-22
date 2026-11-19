@@ -1,0 +1,11 @@
+[project]
+name = "eapractical-22"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ioh>=0.4.2",
+    "numpy>=2.3.3",
+    "typing>=3.10.0.0",
+]
