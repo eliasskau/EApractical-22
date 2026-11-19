@@ -20,6 +20,32 @@ hyperparameter_space = {
     "crossover_rate": [0.5, 0.7, 0.9],
 }
 
+def _rank_ascending(values: List[float]) -> np.ndarray:
+    """Return integer ranks for a list of values.
+    Lowest value gets rank 0, next gets rank 1, etc.
+    lower fitness is better for LABS & N-Queens
+    """
+    order = np.argsort(values)              # indices sorted by fitness, best first
+    ranks = np.empty(len(values), dtype=int)
+    ranks[order] = np.arange(len(values))   # assign 0 to best, 1 to next
+    return ranks
+
+
+def _rank_sum_score(results: List[dict]) -> List[int]:
+    """Combine two problems into one ranking.
+
+    results: list of dicts, one per config, each structured:
+    {"labs": <fitness>, "nq": <fitness>}
+
+    Returns: list of integer combined scores (lower = better).
+    """
+    labs_vals = [r["labs"] for r in results]
+    nq_vals   = [r["nq"]   for r in results]
+
+    labs_ranks = _rank_ascending(labs_vals)
+    nq_ranks   = _rank_ascending(nq_vals)
+
+    return [int(labs_ranks[i] + nq_ranks[i]) for i in range(len(results))]
 
 # Hyperparameter tuning function
 def tune_hyperparameters() -> List:
